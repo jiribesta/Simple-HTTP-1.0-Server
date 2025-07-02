@@ -4,6 +4,7 @@
 A basic Linux HTTP server that serves a requested file or directory.
 
 The purpose of this project was for me to learn C and Network Programming basics.
+
 Great resource which I recommend checking out: [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
 
 ## Usage
