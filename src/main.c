@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        if (parse_request_and_send_response(client_fd, req_buf, BASE_DIR) == 0){
+        if (parse_request_and_send_response(client_fd, req_buf) == 0){
             printf("Response sent succesfully on socket %d\n", client_fd);
         }
         close(client_fd);

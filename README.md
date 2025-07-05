@@ -11,7 +11,7 @@ Great resource which I recommend checking out: [Beej's Guide to Network Programm
 Compiling binary:
 
 ```sh
-make all
+make
 ```
 
 Binary usage:
