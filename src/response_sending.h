@@ -26,7 +26,7 @@ char *serve_directory_listing(char *absolute_path);
 // Sends a GET response containing the directory listing
 int send_directory_listing_response(char *directory_path, int receiving_client_socket);
 
-// Sends a GET or HEAD method as a response, depending on the head_method_check parameter
+// Sends a response GET or HEAD method, depending on the head_method_check parameter
 int get_or_head_method(char full_requested_path[], int client_socket, int head_method_check);
 
 #endif

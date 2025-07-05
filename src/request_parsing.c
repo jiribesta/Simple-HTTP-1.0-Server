@@ -123,13 +123,39 @@ int http09_check(char *original_request, char *usable_path)
     return 0;
 }
 
+// Checks whether the version's syntax is valid
+int http_version_check(char *http_version)
+{
+    regex_t regex;
+    int regexreturn;
+    if (regcomp(&regex, "HTTP/[0-9]+\\.[0-9]+", REG_EXTENDED)){
+        perror("parse_request - regex compilation failure");
+        return 500;
+    }
+
+    regexreturn = regexec(&regex, http_version, 0, NULL, 0);
+    if (!regexreturn){ // Version's syntax checks out
+        regfree(&regex);
+        return 200;
+    } else if (regexreturn == REG_NOMATCH){ // Version is malformed
+        regfree(&regex);
+        return 400;
+    } else { // There was an error checking the version
+        char regex_error_massage[100];
+        regerror(regexreturn, &regex, regex_error_massage, sizeof(regex_error_massage));
+        fprintf(stderr, "parse_request - regex match failed: %s\n", regex_error_massage);
+        regfree(&regex);
+        return 500;
+    }
+}
+
 // Returns 0 if everything was sent properly
 int parse_request_and_send_response(const int sock, char *request)
 {
     char *line; // Split the request into lines with strtok()
     char *method, *uri_file_path, *version;
     char combined_path[PATH_MAX + 1]; // The path we'll pass into functions to work with a file/directory
-    int return_status_code; // To store the return value of URI_checker()
+    int return_status_code;
 
     // Check for a HTTP/0.9 request
     if ((return_status_code = http09_check(request, combined_path)) == 200){
@@ -159,26 +185,10 @@ int parse_request_and_send_response(const int sock, char *request)
     }
 
 
-    // HTTP version check
-    regex_t regex;
-    int regexreturn;
-    if (regcomp(&regex, "HTTP/[0-9]+\\.[0-9]+", REG_EXTENDED)){
-        perror("parse_request - regex compilation failure");
-        return handle_error_status_code(500, sock);
-    }
-
-    regexreturn = regexec(&regex, version, 0, NULL, 0);
-    if (!regexreturn){ // version's syntax checks out
-        regfree(&regex);
-    } else if (regexreturn == REG_NOMATCH){ // version is malformed
-        regfree(&regex);
-        return handle_error_status_code(400, sock);
-    } else { // There was an error checking version
-        char regex_error_massage[100];
-        regerror(regexreturn, &regex, regex_error_massage, sizeof(regex_error_massage));
-        fprintf(stderr, "parse_request - regex match failed: %s\n", regex_error_massage);
-        regfree(&regex);
-        return handle_error_status_code(500, sock);
+    // Check if the version is fine
+    return_status_code = http_version_check(version);
+    if (return_status_code != 200){
+        return handle_error_status_code(return_status_code, sock);
     }
 
 
