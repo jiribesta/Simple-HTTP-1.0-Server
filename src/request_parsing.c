@@ -17,29 +17,32 @@ int decode_URI(char *original_src, char *dest)
 
     int i = 0, j = 0;
     while (src[i]) {
-        if (src[i] == '%') {
-            // Convert the next two characters from hex to decimal if they are valid hex digits
-            if (src[i + 1] && isxdigit(src[i + 1]) && src[i + 2] && isxdigit(src[i + 2])) {
-                char encoded_char[3] = {src[i + 1], src[i + 2], '\0'};
-                long decoded_char = strtol(encoded_char, NULL, 16);
-
-                // Check whether character is forbidden
-                if (decoded_char < 32 || decoded_char == 127){
-                    return -1;
-                }
-
-                dest[j++] = (char) decoded_char;
-                i += 3; // Move past the encoded character
-            } else {
-                // If the format is incorrect, just copy the '%' character
-                dest[j++] = src[i++];
-            }
-        } else if (src[i] == '+') {
-            // Convert '+' to space
+        // Convert '+' to space
+        if (src[i] == '+') {
             dest[j++] = ' ';
             i++;
+            
+        // If it's not the beginning of a URL-encoded character
+        } else if (src[i] != '%') {
+            dest[j++] = src[i++]; // Copy the character as is
+        }
+
+        // If the character is '%', convert the next two characters from hex to decimal if they are valid hex digits
+        if (src[i + 1] && isxdigit(src[i + 1]) && 
+            src[i + 2] && isxdigit(src[i + 2])) {
+
+            char encoded_char[3] = {src[i + 1], src[i + 2], '\0'};
+            long decoded_char = strtol(encoded_char, NULL, 16);
+
+            // Check whether character is forbidden
+            if (decoded_char < 32 || decoded_char == 127){
+                return -1;
+            }
+
+            dest[j++] = (char) decoded_char;
+            i += 3; // Move past the encoded character
         } else {
-            // Copy the character as is
+            // If the format is incorrect, just copy the '%' character
             dest[j++] = src[i++];
         }
     }
